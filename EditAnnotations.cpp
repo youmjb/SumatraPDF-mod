@@ -491,8 +491,6 @@ static void DoPopup(EditAnnotationsWindow* ew, Annotation* annot) {
 }
 
 static void DoContents(EditAnnotationsWindow* ew, Annotation* annot) {
-    if (Type(annot) == AnnotationType::Caret)
-        return;
     str::Str s = Contents(annot);
     // TODO: don't replace if already is "\r\n"
     Replace(s, "\n", "\r\n");
@@ -606,7 +604,7 @@ static void TextFontSizeChanging(EditAnnotationsWindow* ew, TrackbarPosChangingE
     MainWindowRerender(ew->tab->win);
 }
 
-static void DoTextColor(EditAnnotationsWindow* ew, Annotation* annot) {
+static void DoTextColor(EditAnnotationsWindow* ew, Annotation* annot) {   
     if (Type(annot) != AnnotationType::FreeText) {
         return;
     }
@@ -1113,7 +1111,7 @@ static void CreateMainLayout(EditAnnotationsWindow* ew) {
         args.rangeMax = 400;
 
         auto w = new Trackbar();
-        w->SetInsetsPt(4, 0, 0, 0);
+        w->SetInsetsPt(8, 0, 0, 0);
 
         w->Create(args);
 
@@ -1607,7 +1605,7 @@ Annotation* EngineMupdfCreateAnnotation(EngineBase* engine, AnnotationType typ, 
         } break;
     }
     if (typ == AnnotationType::FreeText) {
-        pdf_set_annot_contents(ctx, annot, "This is a text..");
+        pdf_set_annot_contents(ctx, annot, "");
         pdf_set_annot_border(ctx, annot, 0);
     }
     pdf_update_annot(ctx, annot);
