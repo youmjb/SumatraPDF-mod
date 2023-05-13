@@ -132,6 +132,8 @@ struct EditAnnotationsWindow : Wnd {
     DropDown* dropDownTextFont = nullptr;
     Static* staticTextSize = nullptr;
     Trackbar* trackbarTextSize = nullptr;
+    Static* staticImageSize = nullptr;
+    Trackbar* trackbarImageSize = nullptr;    
     Static* staticTextColor = nullptr;
     DropDown* dropDownTextColor = nullptr;
 
@@ -202,6 +204,8 @@ static void HidePerAnnotControls(EditAnnotationsWindow* ew) {
     ew->dropDownTextFont->SetIsVisible(false);
     ew->staticTextSize->SetIsVisible(false);
     ew->trackbarTextSize->SetIsVisible(false);
+    ew->staticImageSize->SetIsVisible(false);
+    ew->trackbarImageSize->SetIsVisible(false);
     ew->staticTextColor->SetIsVisible(false);
     ew->dropDownTextColor->SetIsVisible(false);
 
@@ -552,9 +556,47 @@ static void DoTextSize(EditAnnotationsWindow* ew, Annotation* annot) {
     ew->staticTextSize->SetIsVisible(true);
     ew->trackbarTextSize->SetIsVisible(true);
 }
+static void DoImageSize(EditAnnotationsWindow* ew, Annotation* annot) {
+    if (Type(annot) != AnnotationType::Caret) {
+        return;
+    }
+    // get rect information
+    RectF rect = GetBounds(annot);
+    AutoFreeStr s = str::Format(_TRA("Image Width: %.1f"), rect.dx);
+    ew->staticImageSize->SetText(s.Get());
+    // set position of trackbar to the clipboard image width
+    ew->trackbarImageSize->SetValue(int(rect.dx));
+    ew->staticImageSize->SetIsVisible(true);
+    ew->trackbarImageSize->SetIsVisible(true);
+}
+
+static void ClipboardSizeChanging(EditAnnotationsWindow* ew, TrackbarPosChangingEvent* ev) {
+    EngineMupdf* e = ew->annot->engine;
+    auto ctx = e->ctx;
+    // get current width of clipboard image
+    RectF rect = GetBounds(ew->annot);
+    fz_rect fzrect = {0, 0, 10, 10};
+    // get position of trackbar scroll
+    int ipos = ew->trackbarImageSize->GetValue();
+    if (ipos == 0) // do nothing
+        return;
+    // change the image width
+    fzrect.x0 = rect.x;
+    fzrect.x1 = rect.x + float(ipos);
+    fzrect.y0 = rect.y;
+    fzrect.y1 = rect.y + float(ipos) * rect.dy / rect.dx;
+    // new rect for the changed image width
+    pdf_set_annot_rect(ctx, ew->annot->pdfannot, fzrect);
+    // display new image width in the static text
+    AutoFreeStr s = str::Format(_TRA("Image Width: %.1f"), fzrect.x1 - fzrect.x0);
+    ew->staticImageSize->SetText(s.Get());
+    // apply changed image
+    EnableSaveIfAnnotationsChanged(ew);
+    MainWindowRerender(ew->tab->win);
+}
 
 static void TextFontSizeChanging(EditAnnotationsWindow* ew, TrackbarPosChangingEvent* ev) {
-    int fontSize = ev->pos;
+    int fontSize = ev->pos;    
     SetDefaultAppearanceTextSize(ew->annot, fontSize);
     AutoFreeStr s = str::Format(_TRA("Text Size: %d"), fontSize);
     ew->staticTextSize->SetText(s.Get());
@@ -789,6 +831,7 @@ static void UpdateUIForSelectedAnnotation(EditAnnotationsWindow* ew, int itemNo)
         DoTextAlignment(ew, ew->annot);
         DoTextFont(ew, ew->annot);
         DoTextSize(ew, ew->annot);
+        DoImageSize(ew, ew->annot);
         DoTextColor(ew, ew->annot);
 
         DoLineStartEnd(ew, ew->annot);
@@ -1051,6 +1094,27 @@ static void CreateMainLayout(EditAnnotationsWindow* ew) {
 
         w->onPosChanging = [ew](auto&& PH1) { return TextFontSizeChanging(ew, std::forward<decltype(PH1)>(PH1)); };
         ew->trackbarTextSize = w;
+        vbox->AddChild(w);
+    }
+    {
+        auto w = CreateStatic(parent, _TRA("Image Width:"));
+        w->SetInsetsPt(8, 0, 0, 0);
+        ew->staticImageSize = w;
+        vbox->AddChild(w);
+    }
+    {
+        TrackbarCreateArgs args;
+        args.parent = parent;
+        args.rangeMin = 20;
+        args.rangeMax = 400;
+
+        auto w = new Trackbar();
+        w->SetInsetsPt(4, 0, 0, 0);
+
+        w->Create(args);
+
+        w->onPosChanging = [ew](auto&& PH1) { return ClipboardSizeChanging(ew, std::forward<decltype(PH1)>(PH1)); };
+        ew->trackbarImageSize = w;
         vbox->AddChild(w);
     }
 
@@ -1482,6 +1546,15 @@ static const char* getuser(void) {
 }
 
 Annotation* EngineMupdfCreateAnnotation(EngineBase* engine, AnnotationType typ, int pageNo, PointF pos) {
+    if (typ == AnnotationType::Caret) {
+        // Open the clipboard, and verify that the image data is there.
+        if (!OpenClipboard(nullptr))
+            return NULL;
+        if (!IsClipboardFormatAvailable(CF_BITMAP)) {
+            CloseClipboard();
+            return NULL;
+        }
+    }
     EngineMupdf* epdf = AsEngineMupdf(engine);
     fz_context* ctx = epdf->ctx;
 
@@ -1492,7 +1565,7 @@ Annotation* EngineMupdfCreateAnnotation(EngineBase* engine, AnnotationType typ, 
     auto page = pdf_page_from_fz_page(ctx, pageInfo->page);
     enum pdf_annot_type atyp = (enum pdf_annot_type)typ;
 
-    auto annot = pdf_create_annot(ctx, page, atyp);
+    auto annot = pdf_create_annot(ctx, page, atyp);    
 
     pdf_set_annot_modification_date(ctx, annot, time(nullptr));
     if (pdf_annot_has_author(ctx, annot)) {
@@ -1530,60 +1603,10 @@ Annotation* EngineMupdfCreateAnnotation(EngineBase* engine, AnnotationType typ, 
         } break;
     }
     if (typ == AnnotationType::FreeText) {
-        pdf_set_annot_contents(ctx, annot, "");
+        pdf_set_annot_contents(ctx, annot, "This is a text..");
         pdf_set_annot_border(ctx, annot, 0);
     }
-
     pdf_update_annot(ctx, annot);
-
-          if (!OpenClipboard(nullptr)) {
-        ;
-    } else if (!IsClipboardFormatAvailable(CF_BITMAP)) {
-        CloseClipboard();
-    } else {
-        // 클립보드에서 비트맵 핸들을 검색합니다.
-        HBITMAP hBitmap = static_cast<HBITMAP>(GetClipboardData(CF_BITMAP));
-        if (hBitmap == nullptr) {
-            CloseClipboard();
-        } else {
-            // 비트맵 핸들에서 DIB 데이터를 추출합니다.
-            BITMAP bm;
-            GetObject(hBitmap, sizeof(BITMAP), &bm);
-            int size = bm.bmWidthBytes * bm.bmHeight;
-            unsigned char* data = new unsigned char[size];
-            GetBitmapBits(hBitmap, size, data);
-
-            // 추출한 DIB 데이터를 파일에 씁니다.
-            std::ofstream file("clipboard_image.bmp", std::ios::binary);
-            BITMAPFILEHEADER bmfh = {0};
-            bmfh.bfType = 0x4d42; // "BM"
-            bmfh.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-            bmfh.bfSize = bmfh.bfOffBits + size;
-            file.write(reinterpret_cast<const char*>(&bmfh), sizeof(bmfh));
-            BITMAPINFOHEADER bmih = {0};
-            bmih.biSize = sizeof(BITMAPINFOHEADER);
-            bmih.biWidth = bm.bmWidth;
-            bmih.biHeight = bm.bmHeight; // top-down 방식으로 저장
-            bmih.biPlanes = 1;
-            bmih.biBitCount = bm.bmBitsPixel;
-            bmih.biCompression = BI_RGB;
-            bmih.biSizeImage = size;
-            file.write(reinterpret_cast<const char*>(&bmih), sizeof(bmih));
-            for (int y = bm.bmHeight - 1; y >= 0; --y) {
-                file.write(reinterpret_cast<const char*>(data + y * bm.bmWidthBytes), bm.bmWidthBytes);
-            }
-            file.close();
-            // 사용이 끝난 핸들과 데이터를 정리합니다.
-            delete[] data;
-            CloseClipboard();
-            if (typ == AnnotationType::Caret) {
-                fz_image* img = fz_new_image_from_file(ctx, "clipboard_image.bmp");
-                pdf_set_annot_stamp_image(ctx, annot, img);
-                fz_drop_image(ctx, img);
-            }
-        }
-    }        
-
 
     auto res = MakeAnnotationPdf(epdf, annot, pageNo);
     if (typ == AnnotationType::Text) {
@@ -1607,5 +1630,52 @@ Annotation* EngineMupdfCreateAnnotation(EngineBase* engine, AnnotationType typ, 
         SetColor(res, col);
     }
     pdf_drop_annot(ctx, annot);
+
+    if (typ == AnnotationType::Caret)
+    {  
+        // Retrieve the bitmap handle from the clipboard.
+        HBITMAP hBitmap = static_cast<HBITMAP>(GetClipboardData(CF_BITMAP));
+        if (hBitmap == nullptr) {
+            CloseClipboard();
+            return NULL;
+        }
+        // Extract DIB data from a bitmap handle.
+        BITMAP bm;
+        GetObject(hBitmap, sizeof(BITMAP), &bm);
+        int size = bm.bmWidthBytes * bm.bmHeight;
+        unsigned char* data = new unsigned char[size];
+        GetBitmapBits(hBitmap, size, data);
+
+        // Write the extracted DIB data to a file.
+        std::ofstream file("clipboard_image.bmp", std::ios::binary);
+        BITMAPFILEHEADER bmfh = {0};
+        bmfh.bfType = 0x4d42; // "BM"
+        bmfh.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+        bmfh.bfSize = bmfh.bfOffBits + size;
+        file.write(reinterpret_cast<const char*>(&bmfh), sizeof(bmfh));
+        BITMAPINFOHEADER bmih = {0};
+        bmih.biSize = sizeof(BITMAPINFOHEADER);
+        bmih.biWidth = bm.bmWidth;
+        bmih.biHeight = bm.bmHeight; // Save top-down method
+        bmih.biPlanes = 1;
+        bmih.biBitCount = bm.bmBitsPixel;
+        bmih.biCompression = BI_RGB;
+        bmih.biSizeImage = size;
+        file.write(reinterpret_cast<const char*>(&bmih), sizeof(bmih));
+        for (int y = bm.bmHeight - 1; y >= 0; --y) {
+            file.write(reinterpret_cast<const char*>(data + y * bm.bmWidthBytes), bm.bmWidthBytes);
+        }
+        file.close();
+        // Clean up unused handles and data.
+        delete[] data;
+        CloseClipboard();
+        // Attaches a clipboard image to the stamp. Stamp functionality implemented in Caret
+        fz_image* img = fz_new_image_from_file(ctx, "clipboard_image.bmp");
+        pdf_set_annot_stamp_image(ctx, annot, img);
+        fz_drop_image(ctx, img);        
+    }
+            
+
     return res;
+
 }
