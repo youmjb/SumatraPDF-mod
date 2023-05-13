@@ -731,9 +731,10 @@ pdf_create_annot(fz_context *ctx, pdf_page *page, enum pdf_annot_type type)
 
 		case PDF_ANNOT_CARET:
 			{
-				fz_rect caret_rect = { 12, 12, 12+200, 12+150 };
-				pdf_set_annot_rect(ctx, annot, caret_rect);
-				pdf_set_annot_color(ctx, annot, 3, blue);
+				fz_rect caret_rect = {12, 12, 12 + 200, 12 + 150};
+                pdf_set_annot_rect(ctx, annot, caret_rect);
+                float transparent[] = {0, 0, 0, 0};
+                pdf_set_annot_color(ctx, annot, 4, transparent);
 			}
 			break;
 
