@@ -2138,20 +2138,27 @@ pdf_write_free_text_appearance(fz_context *ctx, pdf_annot *annot, fz_buffer *buf
 	q = pdf_annot_quadding(ctx, annot);
 	pdf_annot_default_appearance(ctx, annot, &font, &size, &n, color);
 	lang = pdf_annot_language(ctx, annot);
+
+	b = pdf_write_border_appearance(ctx, annot, buf);
 		
     fz_font* fonta = fz_new_base14_font(ctx, full_font_name(&font));
 	float var_w = 0;
-    float max_w = 400.0;
-    float fontheight = size + 2.0;
+    float max_w = 400.0+2*b;
+    float fontheight = size + 1.0;
     float lineNo = 0;
     get_var_rect_from_text(ctx, lang, fonta, size, text, max_w, &var_w, &lineNo);
     if (var_w < max_w) {
-        rect->x1 = rect->x0 + var_w;
+        rect->x1 = rect->x0 + var_w + 5*b;
         rect->y1 = rect->y0 + fontheight + 1.0 * lineNo * fontheight;
     } else {
         rect->x1 = rect->x0 + max_w;
         rect->y1 = rect->y0 + fontheight + floor(var_w / max_w) * fontheight + 1.0 * lineNo * fontheight;
     }
+
+	rect->y0 = rect->y0;
+	rect->y1 = rect->y1 + 2*b;
+	rect->x0 = rect->x0;
+	rect->x1 = rect->x1 + 2*b;
 
 	w = rect->x1 - rect->x0;
 	h = rect->y1 - rect->y0;
@@ -2167,7 +2174,7 @@ pdf_write_free_text_appearance(fz_context *ctx, pdf_annot *annot, fz_buffer *buf
 	if (pdf_write_fill_color_appearance(ctx, annot, buf))
 		fz_append_printf(ctx, buf, "0 0 %g %g re\nf\n", w, h);
 
-	b = pdf_write_border_appearance(ctx, annot, buf);
+	
 	if (b > 0)
 	{
 		if (n == 4)
@@ -2182,7 +2189,8 @@ pdf_write_free_text_appearance(fz_context *ctx, pdf_annot *annot, fz_buffer *buf
 	}
 
 	fz_append_printf(ctx, buf, "%g %g %g %g re\nW\nn\n", b, b, w-b*2, h-b*2);
-	write_variable_text(ctx, annot, buf, res, lang, text, font, size, n, color, q, w, h, b*2,
+
+	write_variable_text(ctx, annot, buf, res, lang, text, font, size, n, color, q, w, h, b,
 		0.8f, 1.2f, 1, 0, 0);
 }
 
