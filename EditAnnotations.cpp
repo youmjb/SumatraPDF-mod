@@ -491,6 +491,8 @@ static void DoPopup(EditAnnotationsWindow* ew, Annotation* annot) {
 }
 
 static void DoContents(EditAnnotationsWindow* ew, Annotation* annot) {
+    if (Type(annot) == AnnotationType::Caret)
+        return;
     str::Str s = Contents(annot);
     // TODO: don't replace if already is "\r\n"
     Replace(s, "\n", "\r\n");
@@ -722,6 +724,8 @@ static void IconSelectionChanged(EditAnnotationsWindow* ew) {
 }
 
 static void DoColor(EditAnnotationsWindow* ew, Annotation* annot) {
+    if (Type(annot) == AnnotationType::Caret)
+        return;
     size_t n = dimof(gAnnotsWithColor);
     bool isVisible = IsAnnotationTypeInArray(gAnnotsWithColor, n, Type(annot));
     if (!isVisible) {
