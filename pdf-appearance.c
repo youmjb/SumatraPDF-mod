@@ -2138,21 +2138,20 @@ pdf_write_free_text_appearance(fz_context *ctx, pdf_annot *annot, fz_buffer *buf
 	q = pdf_annot_quadding(ctx, annot);
 	pdf_annot_default_appearance(ctx, annot, &font, &size, &n, color);
 	lang = pdf_annot_language(ctx, annot);
-
 	b = pdf_write_border_appearance(ctx, annot, buf);
 		
     fz_font* fonta = fz_new_base14_font(ctx, full_font_name(&font));
 	float var_w = 0;
-    float max_w = 400.0+2*b;
-    float fontheight = size + 1.0;
+    float max_w = 400.0;
+    float fontheight = size * 1.3;
     float lineNo = 0;
     get_var_rect_from_text(ctx, lang, fonta, size, text, max_w, &var_w, &lineNo);
     if (var_w < max_w) {
-        rect->x1 = rect->x0 + var_w + 5*b;
-        rect->y1 = rect->y0 + fontheight + 1.0 * lineNo * fontheight;
+        rect->x1 = rect->x0 + var_w + 0.0 * b;
+        rect->y1 = rect->y0 + fontheight + lineNo * fontheight + 0.0 * b;
     } else {
         rect->x1 = rect->x0 + max_w;
-        rect->y1 = rect->y0 + fontheight + floor(var_w / max_w) * fontheight + 1.0 * lineNo * fontheight;
+        rect->y1 = rect->y0 + fontheight + ceil(var_w / max_w) * fontheight + lineNo * fontheight + 0.0 * b;
     }
 
 	rect->y0 = rect->y0;
