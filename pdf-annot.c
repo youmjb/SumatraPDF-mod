@@ -299,7 +299,9 @@ void pdf_set_annot_has_changed(fz_context *ctx, pdf_annot *annot)
 void
 pdf_dirty_annot(fz_context *ctx, pdf_annot *annot)
 {
-	pdf_annot_request_resynthesis(ctx, annot);
+    enum pdf_annot_type ret = pdf_annot_type(ctx, annot);         
+	if (ret != PDF_ANNOT_CARET)
+		pdf_annot_request_resynthesis(ctx, annot);
 }
 
 const char *
@@ -1026,7 +1028,7 @@ pdf_set_annot_rect(fz_context *ctx, pdf_annot *annot, fz_rect rect)
 		rect = fz_transform_rect(rect, inv_page_ctm);
 
 		pdf_dict_put_rect(ctx, annot->obj, PDF_NAME(Rect), rect);
-		//pdf_dirty_annot(ctx, annot);
+		pdf_dirty_annot(ctx, annot);
 	}
 	fz_always(ctx)
 		pdf_end_operation(ctx, annot->page->doc);
