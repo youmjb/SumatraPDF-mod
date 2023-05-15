@@ -2114,84 +2114,76 @@ static void get_var_rect_from_text(fz_context* ctx, fz_text_language lang, fz_fo
         x += state.w * size;
         if (state.u == '\n' || state.u == '\r') {
             y++;
-            y;
         }
     }
     *rectw = x;
     *lineNo = y;
 }
 
-static void
-pdf_write_free_text_appearance(fz_context *ctx, pdf_annot *annot, fz_buffer *buf,
-	fz_rect *rect, fz_rect *bbox, fz_matrix *matrix, pdf_obj **res)
-{
-	const char *font;
-	float size, color[4];
-	const char *text;
-	float w, h, t, b;
-	int q, r, n;
-	int lang;
+static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz_buffer* buf, fz_rect* rect,
+                                           fz_rect* bbox, fz_matrix* matrix, pdf_obj** res) {
+    const char* font;
+    float size, color[4];
+    const char* text;
+    float w, h, t, b;
+    int q, r, n;
+    int lang;
 
-	/* /Rotate is an undocumented annotation property supported by Adobe */
-	text = pdf_annot_contents(ctx, annot);
-	r = pdf_dict_get_int(ctx, annot->obj, PDF_NAME(Rotate));
-	q = pdf_annot_quadding(ctx, annot);
-	pdf_annot_default_appearance(ctx, annot, &font, &size, &n, color);
-	lang = pdf_annot_language(ctx, annot);
-	b = pdf_write_border_appearance(ctx, annot, buf);
-		
+    /* /Rotate is an undocumented annotation property supported by Adobe */	
+    text = pdf_annot_contents(ctx, annot);
+    r = pdf_dict_get_int(ctx, annot->obj, PDF_NAME(Rotate));
+    q = pdf_annot_quadding(ctx, annot);
+    pdf_annot_default_appearance(ctx, annot, &font, &size, &n, color);
+    lang = pdf_annot_language(ctx, annot);
+    b = pdf_write_border_appearance(ctx, annot, buf);
+
     fz_font* fonta = fz_new_base14_font(ctx, full_font_name(&font));
-	float var_w = 0;
+    float var_w = 0;
     float max_w = 400.0;
-    float fontheight = size * 1.3;
+    float fontheight = size * 1.0;
     float lineNo = 0;
     get_var_rect_from_text(ctx, lang, fonta, size, text, max_w, &var_w, &lineNo);
     if (var_w < max_w) {
-        rect->x1 = rect->x0 + var_w + 0.0 * b;
-        rect->y1 = rect->y0 + fontheight + lineNo * fontheight + 0.0 * b;
+        rect->x1 = rect->x0 + var_w;
+        rect->y1 = rect->y0 + fontheight + lineNo * fontheight;
     } else {
         rect->x1 = rect->x0 + max_w;
-        rect->y1 = rect->y0 + fontheight + ceil(var_w / max_w) * fontheight + lineNo * fontheight + 0.0 * b;
+        rect->y1 = rect->y0 + fontheight + var_w / max_w * fontheight + lineNo * fontheight;
     }
 
-	rect->y0 = rect->y0;
-	rect->y1 = rect->y1 + 2*b;
-	rect->x0 = rect->x0;
-	rect->x1 = rect->x1 + 2*b;
+    rect->y1 += 2 * b;
+    rect->x1 += 2 * b;
 
-	w = rect->x1 - rect->x0;
-	h = rect->y1 - rect->y0;
-	if (r == 90 || r == 270)
-		t = h, h = w, w = t;
+    w = rect->x1 - rect->x0;
+    h = rect->y1 - rect->y0;
+    if (r == 90 || r == 270)
+        t = h, h = w, w = t;
 
-	*matrix = fz_rotate(r);
-	*bbox = fz_make_rect(0, 0, w, h);
+    *matrix = fz_rotate(r);
+    *bbox = fz_make_rect(0, 0, w, h);
 
-	pdf_write_opacity(ctx, annot, buf, res);
-	pdf_write_dash_pattern(ctx, annot, buf, res);
+    pdf_write_opacity(ctx, annot, buf, res);
+    pdf_write_dash_pattern(ctx, annot, buf, res);
 
-	if (pdf_write_fill_color_appearance(ctx, annot, buf))
-		fz_append_printf(ctx, buf, "0 0 %g %g re\nf\n", w, h);
+    if (pdf_write_fill_color_appearance(ctx, annot, buf))
+        fz_append_printf(ctx, buf, "0 0 %g %g re\nf\n", w, h);
 
-	
-	if (b > 0)
-	{
-		if (n == 4)
-			fz_append_printf(ctx, buf, "%g %g %g %g K\n", color[0], color[1], color[2], color[3]);
-		else if (n == 3)
-			fz_append_printf(ctx, buf, "%g %g %g RG\n", color[0], color[1], color[2]);
-		else if (n == 1)
-			fz_append_printf(ctx, buf, "%g G\n", color[0]);
-		else if (n == 0)
-			fz_append_printf(ctx, buf, "0 G\n");
-		fz_append_printf(ctx, buf, "%g %g %g %g re\nS\n", b/2, b/2, w-b, h-b);
-	}
+    if (b > 0) {
+        if (n == 4)
+            fz_append_printf(ctx, buf, "%g %g %g %g K\n", color[0], color[1], color[2], color[3]);
+        else if (n == 3)
+            fz_append_printf(ctx, buf, "%g %g %g RG\n", color[0], color[1], color[2]);
+        else if (n == 1)
+            fz_append_printf(ctx, buf, "%g G\n", color[0]);
+        else if (n == 0)
+            fz_append_printf(ctx, buf, "0 G\n");
+        fz_append_printf(ctx, buf, "%g %g %g %g re\nS\n", b / 2, b / 2, w - b, h - b);
+    }
+    fz_append_printf(ctx, buf, "%g %g %g %g re\nW\nn\n", b, b, w - b * 2, h - b * 2);
 
-	fz_append_printf(ctx, buf, "%g %g %g %g re\nW\nn\n", b, b, w-b*2, h-b*2);
-
-	write_variable_text(ctx, annot, buf, res, lang, text, font, size, n, color, q, w, h, b,
-		0.8f, 1.2f, 1, 0, 0);
+    write_variable_text(ctx, annot, buf, res, lang, text, font, size, n, color, q, w, h, b, 1.0f, 1.0f, 1, 0, 0);
 }
+
 
 static void
 pdf_write_tx_widget_appearance(fz_context *ctx, pdf_annot *annot, fz_buffer *buf,
