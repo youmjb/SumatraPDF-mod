@@ -2140,7 +2140,7 @@ static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz
     fz_font* fonta = fz_new_base14_font(ctx, full_font_name(&font));
     float var_w = 0;
     float max_w = 400.0;
-    float fontheight = size * 1.0;
+    float fontheight = size;
     float lineNo = 0;
     get_var_rect_from_text(ctx, lang, fonta, size, text, max_w, &var_w, &lineNo);
     if (var_w < max_w) {
@@ -2177,9 +2177,9 @@ static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz
             fz_append_printf(ctx, buf, "%g G\n", color[0]);
         else if (n == 0)
             fz_append_printf(ctx, buf, "0 G\n");
-        fz_append_printf(ctx, buf, "%g %g %g %g re\nS\n", b / 2, b / 2, w - b, h - b);
+        fz_append_printf(ctx, buf, "%g %g %g %g re\nS\n", 0, 0, w, h);
     }
-    fz_append_printf(ctx, buf, "%g %g %g %g re\nW\nn\n", b, b, w - b * 2, h - b * 2);
+    fz_append_printf(ctx, buf, "%g %g %g %g re\nW\nn\n", b, b, w - b, h - b);
 
     write_variable_text(ctx, annot, buf, res, lang, text, font, size, n, color, q, w, h, b, 1.0f, 1.0f, 1, 0, 0);
 }
