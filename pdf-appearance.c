@@ -2181,7 +2181,7 @@ static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz
     }
     fz_append_printf(ctx, buf, "%g %g %g %g re\nW\nn\n", b, b, w - b, h - b);
 
-    write_variable_text(ctx, annot, buf, res, lang, text, font, size, n, color, q, w, h, b, 1.0f, 1.0f, 1, 0, 0);
+    write_variable_text(ctx, annot, buf, res, lang, text, font, size, n, color, q, w, h, b, 1.0f, 1.0f, 1, 0, 1);
 }
 
 
