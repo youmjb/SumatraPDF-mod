@@ -2104,17 +2104,20 @@ layout_variable_text(fz_context *ctx, fz_layout_block *out,
 	fz_catch(ctx)
 		fz_rethrow(ctx);
 }
-static void get_var_rect_from_text(fz_context* ctx, fz_text_language lang, fz_font* font, float size, const char* text,float maxw, float* rectw, float* lineNo)
+static void get_var_rect_from_text(fz_context* ctx, fz_text_language lang, fz_font* font, float size, const char* text, float* rectw, float* lineNo)
 {
     struct text_walk_state state;
     float x = 0;
+    float xt = 0;
     float y = 0;
     init_text_walk(ctx, &state, lang, font, text, NULL);
     while (next_text_walk(ctx, &state)) {        
-        x += state.w * size;
+        xt += state.w * size;
         if (state.u == '\n' || state.u == '\r') {
             y++;
+            xt = 0;
         }
+        x = max(x, xt);
     }
     *rectw = x;
     *lineNo = y;
@@ -2141,14 +2144,14 @@ static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz
     float var_w = 0;
     float max_w = 400.0;
     float fontheight = size;
-    float lineNo = 0;
-    get_var_rect_from_text(ctx, lang, fonta, size, text, max_w, &var_w, &lineNo);
+    float lineNo = 0;    
+    get_var_rect_from_text(ctx, lang, fonta, size, text,&var_w, &lineNo);
     if (var_w < max_w) {
         rect->x1 = rect->x0 + var_w;
         rect->y1 = rect->y0 + fontheight + lineNo * fontheight;
     } else {
         rect->x1 = rect->x0 + max_w;
-        rect->y1 = rect->y0 + fontheight + round(var_w / max_w) * fontheight + lineNo * fontheight;
+        rect->y1 = rect->y0 + fontheight + floor(var_w / max_w) * fontheight + lineNo * fontheight;
     }
 
     rect->y1 += 2 * b + 5.0;
