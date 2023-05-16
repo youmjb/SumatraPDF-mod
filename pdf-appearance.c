@@ -2151,7 +2151,7 @@ static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz
         rect->y1 = rect->y0 + fontheight + lineNo * fontheight;
     } else {
         rect->x1 = rect->x0 + max_w;
-        rect->y1 = rect->y0 + fontheight + floor(var_w / max_w) * fontheight + lineNo * fontheight;
+        rect->y1 = rect->y0 + fontheight + round(var_w / max_w) * fontheight + lineNo * fontheight;
     }
 
     rect->y1 += 2 * b + 5.0;
