@@ -1648,48 +1648,64 @@ Annotation* EngineMupdfCreateAnnotation(EngineBase* engine, AnnotationType typ, 
     }
     pdf_drop_annot(ctx, annot);
     if (typ == AnnotationType::Image) {
-        // Retrieve the bitmap handle from the clipboard.
-        if (!OpenClipboard(nullptr))
-            return NULL;
-        HBITMAP hBitmap = static_cast<HBITMAP>(GetClipboardData(CF_BITMAP));
-        if (hBitmap == nullptr) {
-            CloseClipboard();
-            return NULL;
-        }
-        // Extract DIB data from a bitmap handle.
-        BITMAP bm;
-        GetObject(hBitmap, sizeof(BITMAP), &bm);
-        int size = bm.bmWidthBytes * bm.bmHeight;
-        unsigned char* data = new unsigned char[size];
-        GetBitmapBits(hBitmap, size, data);
+        try {
+            if (!OpenClipboard(nullptr)) throw std::runtime_error("Failed to open clipboard.");
+            HBITMAP hBitmap = static_cast<HBITMAP>(GetClipboardData(CF_BITMAP));
+            if (hBitmap == nullptr) {
+                CloseClipboard();
+                throw std::runtime_error("Failed to retrieve bitmap data from clipboard.");
+            }
+            // Extract DIB data from a bitmap handle.
+            BITMAP bm;
+            GetObject(hBitmap, sizeof(BITMAP), &bm);
+            int size = bm.bmWidthBytes * bm.bmHeight;
+            unsigned char* data = new unsigned char[size];
+            GetBitmapBits(hBitmap, size, data);
 
-        // Write the extracted DIB data to a file.
-        std::ofstream file("clipboard_image.bmp", std::ios::binary);
-        BITMAPFILEHEADER bmfh = {0};
-        bmfh.bfType = 0x4d42; // "BM"
-        bmfh.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-        bmfh.bfSize = bmfh.bfOffBits + size;
-        file.write(reinterpret_cast<const char*>(&bmfh), sizeof(bmfh));
-        BITMAPINFOHEADER bmih = {0};
-        bmih.biSize = sizeof(BITMAPINFOHEADER);
-        bmih.biWidth = bm.bmWidth;
-        bmih.biHeight = bm.bmHeight; // Save top-down method
-        bmih.biPlanes = 1;
-        bmih.biBitCount = bm.bmBitsPixel;
-        bmih.biCompression = BI_RGB;
-        bmih.biSizeImage = size;
-        file.write(reinterpret_cast<const char*>(&bmih), sizeof(bmih));
-        for (int y = bm.bmHeight - 1; y >= 0; --y) {
-            file.write(reinterpret_cast<const char*>(data + y * bm.bmWidthBytes), bm.bmWidthBytes);
+             // Write the extracted DIB data to a file.
+            std::ofstream file("clipboard_image.bmp", std::ios::binary);
+            if (!file) {
+                delete[] data;
+                CloseClipboard();
+                throw std::runtime_error("Failed to create file for writing DIB data.");
+            }
+            BITMAPFILEHEADER bmfh = {0};
+            bmfh.bfType = 0x4d42; // "BM"
+            bmfh.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+            bmfh.bfSize = bmfh.bfOffBits + size;
+            file.write(reinterpret_cast<const char*>(&bmfh), sizeof(bmfh));
+
+            BITMAPINFOHEADER bmih = {0};
+            bmih.biSize = sizeof(BITMAPINFOHEADER);
+            bmih.biWidth = bm.bmWidth;
+            bmih.biHeight = bm.bmHeight; // Save top-down method
+            bmih.biPlanes = 1;
+            bmih.biBitCount = bm.bmBitsPixel;
+            bmih.biCompression = BI_RGB;
+            bmih.biSizeImage = size;
+            file.write(reinterpret_cast<const char*>(&bmih), sizeof(bmih));
+            for (int y = bm.bmHeight - 1; y >= 0; --y) {
+                file.write(reinterpret_cast<const char*>(data + y * bm.bmWidthBytes), bm.bmWidthBytes);
+            }
+            file.close();
+            // Clean up unused handles and data.
+            delete[] data;
+            CloseClipboard();
+
+            // Attaches a clipboard image to the stamp. Stamp functionality implemented in Image
+            fz_image* img = fz_new_image_from_file(ctx, "clipboard_image.bmp");
+            if (img == nullptr)
+                throw std::runtime_error("Failed to create fz_image from file.");
+
+            pdf_set_annot_stamp_image(ctx, annot, img);
+            fz_drop_image(ctx, img);
+        } catch (const std::exception& e) {
+            // Error occurred, handle the exception
+            // You can log the error message or perform other error handling operations
+            // ...
+            std::cout << "exception: " << e.what() << std::endl;
+            return NULL;
         }
-        file.close();
-        // Clean up unused handles and data.
-        delete[] data;
-        CloseClipboard();
-        // Attaches a clipboard image to the stamp. Stamp functionality implemented in Image
-        fz_image* img = fz_new_image_from_file(ctx, "clipboard_image.bmp");
-        pdf_set_annot_stamp_image(ctx, annot, img);
-        fz_drop_image(ctx, img);
     }
     return res;
 }
