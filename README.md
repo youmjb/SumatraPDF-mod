@@ -3,7 +3,7 @@ Download the original source files of SumatraPDF and unzip to a folder
 
 Overwrite below files to corresponding path
 -----------------------------------------------------------------------------------------------------------------------------------------------
-sumatrapdf-master\src\: Annotation.cpp, Annotation.h, Canvas.cpp, Commands.h, EditAnnotations.cpp, EngineMupdf.cpp, Menu.cpp, SumatraPDF.cpp
+sumatrapdf-master\src\: Annotation.cpp, Annotation.h, Canvas.cpp, Commands.h, EditAnnotations.cpp, EngineMupdf.cpp, Menu.cpp, Menu.h, SumatraPDF.cpp
 
 sumatrapdf-master\src\WinGui: WinGui.cpp
 
