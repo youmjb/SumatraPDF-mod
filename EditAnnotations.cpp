@@ -933,7 +933,7 @@ static void ContentsChanged(EditAnnotationsWindow* ew) {
         KillTimer(win->hwndCanvas, gMainWindowRerenderTimer);
         gMainWindowRerenderTimer = 0;
     }
-    UINT timeoutInMs = 1000;
+    UINT timeoutInMs = 100;
     gMainWindowForRender = win;
     gMainWindowRerenderTimer = SetTimer(win->hwndCanvas, 1, timeoutInMs, [](HWND, UINT, UINT_PTR, DWORD) {
         if (MainWindowStillValid(gMainWindowForRender)) {
