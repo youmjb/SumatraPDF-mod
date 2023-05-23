@@ -578,8 +578,7 @@ static void OnMouseLeftButtonUp(MainWindow* win, int x, int y, WPARAM key) {
         }
         return;
     }
-    OnCreateFreeText(win, x, y);
-    return;
+    OnCreateFreeText(win, x, y);    
 }
 
 static void OnMouseLeftButtonDblClk(MainWindow* win, int x, int y, WPARAM key) {
