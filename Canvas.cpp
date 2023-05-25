@@ -941,7 +941,7 @@ static void DrawDocument(MainWindow* win, HDC hdc, RECT* rcArea) {
             continue;
         }
 
-        HDC bmpDC = CreateCompatibleDC(hdc);
+        /*HDC bmpDC = CreateCompatibleDC(hdc);
         if (!bmpDC) {
             continue;
         }
@@ -954,7 +954,7 @@ static void DrawDocument(MainWindow* win, HDC hdc, RECT* rcArea) {
         int dxDest = std::min(cx, size);
         int dyDest = std::min(cy, size);
         StretchBlt(hdc, x, y, dxDest, dyDest, bmpDC, 0, 0, 16, 16, SRCCOPY);
-        DeleteDC(bmpDC);
+        DeleteDC(bmpDC);*/
     }
 
     if (win->showSelection) {
