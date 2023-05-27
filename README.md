@@ -3,11 +3,12 @@
 This mod has three main features
 -----------------------------------------------------------------------------------------------------------------------------------------------
 1) The size of box containing free text annotations will be automatically resized according to the size of the string.
-2) Image objects can be pasted and their size is also adjustable.
-3) Allows selected text area to be boxed
+2) Image objects can be pasted and their size is adjustable by using scrollbar in the editation window.
+3) Allows selected text area to be boxed.
 
 Download the original source files of SumatraPDF and unzip to a folder
 ----------------------------------------------------------------------------------------------------------------------------------------------
+source url: https://github.com/sumatrapdfreader/sumatrapdf
 
 Overwrite below files to the corresponding path
 -----------------------------------------------------------------------------------------------------------------------------------------------
