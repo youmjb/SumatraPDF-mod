@@ -12,13 +12,13 @@ source url: https://github.com/sumatrapdfreader/sumatrapdf
 
 Overwrite below files to the corresponding path
 -----------------------------------------------------------------------------------------------------------------------------------------------
-sumatrapdf-master\src\: Annotation.cpp, Annotation.h, Canvas.cpp, Commands.h, EditAnnotations.cpp, Menu.cpp, Menu.h, SumatraPDF.cpp
+1) sumatrapdf-master\src\: Annotation.cpp, Annotation.h, Canvas.cpp, Commands.h, EditAnnotations.cpp, Menu.cpp, Menu.h, SumatraPDF.cpp
 
-sumatrapdf-master\src\WinGui: WinGui.cpp
+2) sumatrapdf-master\src\WinGui: WinGui.cpp
 
-sumatrapdf-master\mupdf\source\pdf: pdf-annot.c, pdf-appearance.c, pdf-object.c
+3) sumatrapdf-master\mupdf\source\pdf: pdf-annot.c, pdf-appearance.c, pdf-object.c
 
-sumatrapdf-master\mupdf\include\mupdf\pdf:annot.h, object.h
+4) sumatrapdf-master\mupdf\include\mupdf\pdf:annot.h, object.h
 
 Compile and run in Visual stuido Community
 -----------------------------------------------------------------------------------------------------------------------------------------------
