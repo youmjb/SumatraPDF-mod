@@ -1,6 +1,6 @@
 # SumatraPDF-mod
 ----------------------------------------------------------------------------------------------------------------------------------------------
-This mod has two main features
+This mod has three main features
 -----------------------------------------------------------------------------------------------------------------------------------------------
 1) The size of box containing free text annotations will be automatically resized according to the size of the string.
 2) Image objects can be pasted and their size is also adjustable.
