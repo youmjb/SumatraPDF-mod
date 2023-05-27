@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------------
 This mod has three main features
 -----------------------------------------------------------------------------------------------------------------------------------------------
-1) The size of box containing free text annotations will be automatically resized according to the size of the string. Just double-click the left mouse button to put a text in the free text annotation.
+1) The size of box containing free text annotations will be automatically resized according to the size of the string. The Free text annotation can be selected from the context menu that appears when you right-click the mouse. 
 2) Image objects can be pasted and their size is adjustable by using the horizontal scrollbar in the edit window of annotation.
 3) Allows selected text area to be boxed.
 
