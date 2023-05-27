@@ -10,17 +10,13 @@ Download the original source files of SumatraPDF and unzip to a folder
 
 Overwrite below files to the corresponding path
 -----------------------------------------------------------------------------------------------------------------------------------------------
-sumatrapdf-master\src\: Annotation.cpp, Annotation.h, Canvas.cpp, Commands.h, EditAnnotations.cpp, EngineMupdf.cpp, Menu.cpp, Menu.h, SumatraPDF.cpp
+sumatrapdf-master\src\: Annotation.cpp, Annotation.h, Canvas.cpp, Commands.h, EditAnnotations.cpp, Menu.cpp, Menu.h, SumatraPDF.cpp
 
 sumatrapdf-master\src\WinGui: WinGui.cpp
 
-sumatrapdf-master\mupdf\source\pdf: pdf-annot.c, pdf-appearance.c, pdf-font-add.c, pdf-object.c
+sumatrapdf-master\mupdf\source\pdf: pdf-annot.c, pdf-appearance.c, pdf-object.c
 
 sumatrapdf-master\mupdf\include\mupdf\pdf:annot.h, object.h
-
-Change Project Property setting
-----------------------------------------------------------------------------------------------------------------------------------------------
-Property pages → C/C++ → Code generation → Enable C++ exceptions → Yes(/Ehsc)
 
 Compile and run in Visual stuido Community
 -----------------------------------------------------------------------------------------------------------------------------------------------
