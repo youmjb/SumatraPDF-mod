@@ -2171,10 +2171,10 @@ static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz
         float fontheight = size;
         float lineNo = 0;        
 
-		float temp_w = 400.0;
+	float temp_w = 400.0;
         const char* bt = text;
         const char* ct = text;
-        while ( temp_w > 0)
+        while ( strlen(bt) > 0)
 		{
             temp_w = break_string(ctx, lang, fonta, size, ct, &bt, max_w);
             ct = bt;
@@ -2183,7 +2183,7 @@ static void pdf_write_free_text_appearance(fz_context* ctx, pdf_annot* annot, fz
 		}
 
         rect->x1 = rect->x0 + var_w;
-        rect->y1 = rect->y0 + (lineNo-1) * fontheight;
+        rect->y1 = rect->y0 + lineNo * fontheight;
 
         rect->y1 += 2 * b + 5.0;
         rect->x1 += 2 * b + 5.0;
