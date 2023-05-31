@@ -1734,7 +1734,7 @@ break_string(fz_context *ctx, fz_text_language lang, fz_font *font, float size, 
 			space = state.text + state.n;
 			space_x = x;
 		}
-        if (state.enc == ENC_KOREAN) x += state.w * size * 0.83;
+        if (state.enc == ENC_KOREAN) x += state.w * size * 0.85;
 		else x += state.w * size;
 		if (space && x > maxw)
 			return *endp = space, space_x;
