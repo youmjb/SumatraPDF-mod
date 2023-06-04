@@ -647,9 +647,9 @@ static void ObjectSizeChanging(EditAnnotationsWindow* ew, TrackbarPosChangingEve
     // new rect for the changed image width
     pdf_set_annot_rect(ctx, ew->annot->pdfannot, fzrect);
     // display new image width in the static text
-    AutoFreeStr sw = str::Format(_TRA("Object width: "), fzrect.x1 - fzrect.x0);
+    AutoFreeStr sw = str::Format(_TRA("Object width: %.1f"), fzrect.x1 - fzrect.x0);
     ew->staticObjectWidth->SetText(sw.Get());
-    AutoFreeStr sh = str::Format(_TRA("Object height: "), fzrect.y1 - fzrect.y0);
+    AutoFreeStr sh = str::Format(_TRA("Object height: %.1f"), fzrect.y1 - fzrect.y0);
     ew->staticObjectHeight->SetText(sh.Get());
     // apply changed image
     pdf_update_annot(ctx, ew->annot->pdfannot);
