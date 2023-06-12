@@ -1777,8 +1777,7 @@ Annotation* EngineMupdfCreateAnnotation(EngineBase* engine, AnnotationType typ, 
 
     switch (typ) {
         case AnnotationType::Text:
-        case AnnotationType::FreeText:
-            break;
+        case AnnotationType::FreeText:            
         case AnnotationType::Stamp:
         case AnnotationType::Caret:
         case AnnotationType::Image:
