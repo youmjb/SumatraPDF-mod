@@ -17,7 +17,9 @@ Each folder in this GitHub contains a number of files, along with the paths to w
 
 Compile and run in Visual stuido Community
 -----------------------------------------------------------------------------------------------------------------------------------------------
-The executable file: SumatraPDF.exe
+1) The executable file allowing double click for creating free text annotation: SumatraPDF.exe
+2) The executable file allowing double click for seleting single word: SumatraPDF(raw).exe
+3) 32bit excutable file: SumatraPDF(32bit).exe
 
 
 
