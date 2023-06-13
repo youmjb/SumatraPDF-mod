@@ -1,3 +1,0 @@
-path:
-
-sumatrapdf-master\mupdf\source\pdf\
