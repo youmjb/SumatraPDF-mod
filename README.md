@@ -15,7 +15,7 @@ Overwrite files to the corresponding path
 -----------------------------------------------------------------------------------------------------------------------------------------------
 Each folder in this GitHub contains a number of files, along with the paths to which they should be copied. Refer to the path and overwrite those files into the folder in the original SumatraPDF project.
 
-Compile and run in Visual stuido Community
+Compile and run in Visual studio Community
 -----------------------------------------------------------------------------------------------------------------------------------------------
 1) The executable file allowing double click for creating free text annotation: SumatraPDF.exe
 2) The executable file allowing double click for selecting single word: SumatraPDF(raw).exe
